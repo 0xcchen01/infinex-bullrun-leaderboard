@@ -556,14 +556,15 @@
         "total_bulls": FIELD_MAP.total_bulls, // 'b'
         "rounds_participated": FIELD_MAP.rounds_participated, // 'r'
         "userId": FIELD_MAP.userId, // 'i'
-        "rank": 'current_rank' // rank 字段是 JS 内部计算的
+        "rank": 'bulls_rank' // 排名固定为 Bulls 排名
     };
 
 
     let allData = [];
     let filteredData = [];
 
-    // ⚠️ 默认排序字段应使用 JSON 内部的缩写键，或者使用 rank，这里使用 Bulls 的缩写键 'b'
+    // ⚠️ 默认排序字段：尽管排名是固定的，但我们仍然需要一个默认的行排序。
+    // 保持按 Bulls 缩写键 'b' 降序。
     let currentSort = {field: INVERSE_FIELD_MAP.total_bulls, order: 'desc'};
 
     let currentPage = 1;
@@ -572,12 +573,11 @@
     let pointsChartInstance = null;
     let bullsChartInstance = null;
 
-    // 修复：排序点击处理函数
+    // 排序点击处理函数
     function handleSortClick() {
-        // 🚨 关键修复：将 HTML 的 data-sort 属性 (例如 "total_points")
-        // 映射为 JSON 内部的缩写键 (例如 "p")
         const htmlField = this.dataset.sort;
-        const jsonField = INVERSE_FIELD_MAP[htmlField] || htmlField; // 找不到映射的保持原样（如 current_rank）
+        // 如果点击的是 "排名" 列，我们让它排序内部计算的 bulls_rank 字段
+        const jsonField = INVERSE_FIELD_MAP[htmlField] || htmlField;
         sortData(jsonField);
     }
 
@@ -596,18 +596,20 @@
             const totalUsers = data[FIELD_MAP.total_users];
             const generatedAt = data[FIELD_MAP.generated_at];
 
-            // 添加排名
-            allData = rankings.map((user, index) => ({
+            // 计算 Bulls 排名作为固定排名
+            const bullsSorted = [...rankings].sort((a, b) => b[FIELD_MAP.total_bulls] - a[FIELD_MAP.total_bulls]);
+
+            // 添加固定的 bulls_rank
+            allData = bullsSorted.map((user, index) => ({
                 ...user,
-                rank: index + 1,
+                // rank 是 Bulls 排名
+                bulls_rank: index + 1,
+                // current_rank 仅用于排序，不再显示
                 current_rank: index + 1
             }));
 
-            // ⚠️ 计算并保存Bulls排名 (使用缩写键 'b')
-            const bullsSorted = [...allData].sort((a, b) => b[FIELD_MAP.total_bulls] - a[FIELD_MAP.total_bulls]);
-            bullsSorted.forEach((user, index) => {
-                user.bulls_rank = index + 1;
-            });
+            // 重新设置默认排序字段为 Bulls 缩写键
+            currentSort.field = FIELD_MAP.total_bulls;
 
             // 初始化数据
             applyFiltersAndSort();
@@ -620,11 +622,9 @@
             document.getElementById('loading').style.display = 'none';
             document.getElementById('rankingsTable').style.display = 'table';
 
-            // 🚨 修复：重新绑定排序事件到 th 元素上。
-            // 保持 HTML 中的 data-sort 字段名不变 (如 "total_points")，
-            // 然后使用 handleSortClick 进行映射。
+            // 绑定排序事件
             document.querySelectorAll('th.sortable').forEach(th => {
-                th.removeEventListener('click', handleSortClick); // 避免重复绑定
+                th.removeEventListener('click', handleSortClick);
                 th.addEventListener('click', handleSortClick);
             });
 
@@ -673,13 +673,13 @@
         const {field, order} = currentSort;
 
         tempFilteredData.sort((a, b) => {
-            // ⚠️ 排序字段使用缩写键或 'current_rank'
+            // ⚠️ 排序字段使用缩写键或 'bulls_rank'
             let aVal = a[field];
             let bVal = b[field];
 
-            // 处理 current_rank 字段 (数字)
-            if (field === 'current_rank') {
-                 // 排名通常是升序 (1, 2, 3...)
+            // 处理 bulls_rank 字段 (数字)
+            if (field === 'bulls_rank' || field === 'current_rank') {
+                 // 排名是升序 (1, 2, 3...)
                  if (order === 'asc') return aVal - bVal;
                  else return bVal - aVal;
             }
@@ -698,10 +698,8 @@
             }
         });
 
-        // 3. 更新当前排名
-        tempFilteredData.forEach((user, index) => {
-            user.current_rank = index + 1;
-        });
+        // 3. 🚨 关键修改：不再根据筛选/排序结果更新任何排名。
+        // tempFilteredData.forEach((user, index) => { user.current_rank = index + 1; }); // 移除这行
 
         filteredData = tempFilteredData;
         currentPage = 1;
@@ -715,7 +713,12 @@
             } else {
                 // ⚠️ 使用缩写键判断默认排序方向
                 const descFields = [FIELD_MAP.total_bulls, FIELD_MAP.total_points];
-                order = descFields.includes(field) ? 'desc' : 'asc';
+                // 排名（bulls_rank）默认是升序，其他默认降序
+                if (field === 'bulls_rank') {
+                    order = 'asc';
+                } else {
+                    order = descFields.includes(field) ? 'desc' : 'asc';
+                }
             }
         }
 
@@ -756,7 +759,8 @@
         const pageData = filteredData.slice(startIndex, endIndex);
 
         tbody.innerHTML = pageData.map(user => {
-            let displayRank = user.current_rank;
+            // 🚨 关键修改：始终使用 bulls_rank 作为显示的排名
+            let displayRank = user.bulls_rank;
 
             let rankClass = '';
             if (displayRank === 1) rankClass = 'rank-1';
@@ -810,19 +814,15 @@
         document.querySelector('.table-container').scrollIntoView({behavior: 'smooth'});
     }
 
-    // --- 图表相关函数（修复数据引用）---
+    // --- 图表相关函数（保持不变，使用缩写键）---
     function toggleAnalytics() {
         const section = document.getElementById('analyticsSection');
         const toggleBtn = document.getElementById('analyticsToggle');
 
-        // 🚨 修复数据分析点不开的问题：确保事件绑定成功
-        // 这部分逻辑本身是正确的，问题可能是因为 loadData 失败或 HTML 结构问题。
-        // 但这里只需确保 loadData 中事件绑定是正确的即可。
         section.classList.toggle('expanded');
         toggleBtn.classList.toggle('active');
 
         if (section.classList.contains('expanded')) {
-            // 延迟创建图表，确保 DOM 已经展开并有尺寸
             setTimeout(() => {
                 if (!chartInstance) createRoundsChart();
                 if (!pointsChartInstance) createPointsChart();
@@ -1047,10 +1047,10 @@
         renderTable();
     });
 
-    // 排序事件的绑定已移至 loadData 函数中
-
     loadData();
 </script>
+
+
 </body>
 
 </html>
