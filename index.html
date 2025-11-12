@@ -509,20 +509,20 @@
 
     <div class="table-container">
         <div id="loading" class="loading">加载数据中...</div>
-        <table id="rankingsTable" style="display: none;">
-            <thead>
-            <tr>
-                <th class="sortable" data-sort="rank">排名</th>
-                <th class="sortable" data-sort="username">用户名</th>
-                <th class="sortable" data-sort="total_points">总积分</th>
-                <th class="sortable" data-sort="total_bulls">总Bulls</th>
-                <th class="sortable" data-sort="rounds_participated">回合数</th>
-                <th>用户ID</th>
-            </tr>
-            </thead>
-            <tbody id="tableBody">
-            </tbody>
-        </table>
+<table id="rankingsTable" style="display: none;">
+    <thead>
+    <tr>
+        <th class="sortable" data-sort="rank">排名</th>
+        <th class="sortable" data-sort="username">用户名</th>
+        <th class="sortable" data-sort="total_points">总积分</th>
+        <th class="sortable" data-sort="total_bulls">总Bulls</th>
+        <th class="sortable" data-sort="rounds_participated">回合数</th>
+        <th>用户ID</th>
+    </tr>
+    </thead>
+    <tbody id="tableBody">
+    </tbody>
+</table>
         <div id="noResults" class="no-results" style="display: none;">
             未找到匹配的用户 😢
         </div>
@@ -531,15 +531,56 @@
     <div class="pagination" id="pagination" style="display: none;"></div>
 </div>
 
+
 <script>
+    // ⚠️ 终极压缩后的字段名映射表
+    const FIELD_MAP = {
+        // 顶层字段
+        total_users: "t",
+        generated_at: "g",
+        rankings: "R",
+
+        // 排行榜用户列表中的字段
+        userId: "i",
+        username: "n",
+        total_points: "p",
+        total_bulls: "b",
+        rounds_participated: "r",
+        avg_points: "a",
+    };
+
+    // ⚠️ 定义一个反向映射表，用于将 HTML 中的原始字段名映射到 JSON 中的缩写键
+    const INVERSE_FIELD_MAP = {
+        "username": FIELD_MAP.username, // 'n'
+        "total_points": FIELD_MAP.total_points, // 'p'
+        "total_bulls": FIELD_MAP.total_bulls, // 'b'
+        "rounds_participated": FIELD_MAP.rounds_participated, // 'r'
+        "userId": FIELD_MAP.userId, // 'i'
+        "rank": 'current_rank' // rank 字段是 JS 内部计算的
+    };
+
+
     let allData = [];
     let filteredData = [];
-    let currentSort = {field: 'total_bulls', order: 'desc'};
+
+    // ⚠️ 默认排序字段应使用 JSON 内部的缩写键，或者使用 rank，这里使用 Bulls 的缩写键 'b'
+    let currentSort = {field: INVERSE_FIELD_MAP.total_bulls, order: 'desc'};
+
     let currentPage = 1;
     let itemsPerPage = 50;
     let chartInstance = null;
     let pointsChartInstance = null;
     let bullsChartInstance = null;
+
+    // 修复：排序点击处理函数
+    function handleSortClick() {
+        // 🚨 关键修复：将 HTML 的 data-sort 属性 (例如 "total_points")
+        // 映射为 JSON 内部的缩写键 (例如 "p")
+        const htmlField = this.dataset.sort;
+        const jsonField = INVERSE_FIELD_MAP[htmlField] || htmlField; // 找不到映射的保持原样（如 current_rank）
+        sortData(jsonField);
+    }
+
 
     // ===================================
     // 核心数据加载与初始化
@@ -550,15 +591,20 @@
             const response = await fetch('/user_rankings_simplified.json');
             const data = await response.json();
 
+            // ⚠️ 读取缩写后的顶层字段
+            const rankings = data[FIELD_MAP.rankings] || [];
+            const totalUsers = data[FIELD_MAP.total_users];
+            const generatedAt = data[FIELD_MAP.generated_at];
+
             // 添加排名
-            allData = data.rankings.map((user, index) => ({
+            allData = rankings.map((user, index) => ({
                 ...user,
                 rank: index + 1,
                 current_rank: index + 1
             }));
 
-            // 计算并保存Bulls排名
-            const bullsSorted = [...allData].sort((a, b) => b.total_bulls - a.total_bulls);
+            // ⚠️ 计算并保存Bulls排名 (使用缩写键 'b')
+            const bullsSorted = [...allData].sort((a, b) => b[FIELD_MAP.total_bulls] - a[FIELD_MAP.total_bulls]);
             bullsSorted.forEach((user, index) => {
                 user.bulls_rank = index + 1;
             });
@@ -566,16 +612,28 @@
             // 初始化数据
             applyFiltersAndSort();
 
-            // 更新统计信息
-            document.getElementById('totalUsers').textContent = data.total_users.toLocaleString();
-            document.getElementById('generatedAt').textContent = data.generated_at;
+            // ⚠️ 更新统计信息 (使用缩写键)
+            document.getElementById('totalUsers').textContent = totalUsers.toLocaleString();
+            document.getElementById('generatedAt').textContent = generatedAt;
             document.getElementById('displayedUsers').textContent = allData.length.toLocaleString();
 
             document.getElementById('loading').style.display = 'none';
             document.getElementById('rankingsTable').style.display = 'table';
 
+            // 🚨 修复：重新绑定排序事件到 th 元素上。
+            // 保持 HTML 中的 data-sort 字段名不变 (如 "total_points")，
+            // 然后使用 handleSortClick 进行映射。
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.removeEventListener('click', handleSortClick); // 避免重复绑定
+                th.addEventListener('click', handleSortClick);
+            });
+
             // 绑定分析切换事件
             document.getElementById('analyticsToggle').addEventListener('click', toggleAnalytics);
+
+            // 渲染默认排序状态
+            updateSortHeaders();
+
 
         } catch (error) {
             console.error('加载数据失败:', error);
@@ -584,7 +642,7 @@
     }
 
     // ===================================
-    // 🆕 整合筛选和排序逻辑
+    // 整合筛选和排序逻辑
     // ===================================
     function applyFiltersAndSort() {
         const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
@@ -593,15 +651,16 @@
 
         // 1. 筛选数据
         let tempFilteredData = allData.filter(user => {
-            // 回合数筛选
-            const roundsFilter = user.rounds_participated >= minRounds && user.rounds_participated <= maxRounds;
+            // ⚠️ 回合数筛选 (使用缩写键 'r')
+            const rounds = user[FIELD_MAP.rounds_participated];
+            const roundsFilter = rounds >= minRounds && rounds <= maxRounds;
 
-            // 搜索关键词筛选 (支持 'user1 | user2' 多词模糊搜索)
+            // 搜索关键词筛选 (使用缩写键 'n' 和 'i')
             let searchFilter = true;
             if (searchQuery) {
                 const searchTerms = searchQuery.split(/\s*\|\s*|\s+/).filter(term => term.length > 0);
-                const username = user.username.toLowerCase();
-                const userId = user.userId.toLowerCase();
+                const username = (user[FIELD_MAP.username] || '').toLowerCase();
+                const userId = (user[FIELD_MAP.userId] || '').toLowerCase();
                 searchFilter = searchTerms.some(term =>
                     username.includes(term) || userId.includes(term)
                 );
@@ -614,14 +673,24 @@
         const {field, order} = currentSort;
 
         tempFilteredData.sort((a, b) => {
+            // ⚠️ 排序字段使用缩写键或 'current_rank'
             let aVal = a[field];
             let bVal = b[field];
 
+            // 处理 current_rank 字段 (数字)
+            if (field === 'current_rank') {
+                 // 排名通常是升序 (1, 2, 3...)
+                 if (order === 'asc') return aVal - bVal;
+                 else return bVal - aVal;
+            }
+
+            // 处理非排名字段
             if (typeof aVal === 'string') {
                 aVal = aVal.toLowerCase();
                 bVal = bVal.toLowerCase();
             }
 
+            // 数值型/字符串型字段的降序/升序处理
             if (order === 'asc') {
                 return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
             } else {
@@ -644,7 +713,9 @@
             if (currentSort.field === field) {
                 order = currentSort.order === 'asc' ? 'desc' : 'asc';
             } else {
-                order = (field === 'total_bulls' || field === 'total_points') ? 'desc' : 'asc';
+                // ⚠️ 使用缩写键判断默认排序方向
+                const descFields = [FIELD_MAP.total_bulls, FIELD_MAP.total_points];
+                order = descFields.includes(field) ? 'desc' : 'asc';
             }
         }
 
@@ -656,15 +727,14 @@
     function updateSortHeaders() {
         document.querySelectorAll('th.sortable').forEach(th => {
             th.classList.remove('sorted-asc', 'sorted-desc');
-            if (th.dataset.sort === currentSort.field) {
+
+            const htmlField = th.dataset.sort;
+            const jsonField = INVERSE_FIELD_MAP[htmlField] || htmlField;
+
+            if (jsonField === currentSort.field) {
                 th.classList.add(`sorted-${currentSort.order}`);
             }
         });
-    }
-
-    // 🚨 searchUsers 函数被 applyFiltersAndSort 取代，保留空函数体防止其他地方调用报错
-    function searchUsers(query) {
-        // 核心逻辑已转移到 applyFiltersAndSort
     }
 
     function renderTable() {
@@ -686,7 +756,7 @@
         const pageData = filteredData.slice(startIndex, endIndex);
 
         tbody.innerHTML = pageData.map(user => {
-            let displayRank = user.current_rank !== undefined ? user.current_rank : user.bulls_rank;
+            let displayRank = user.current_rank;
 
             let rankClass = '';
             if (displayRank === 1) rankClass = 'rank-1';
@@ -696,11 +766,11 @@
             return `
                     <tr>
                         <td class="rank ${rankClass}">#${displayRank}</td>
-                        <td class="username">${user.username}</td>
-                        <td class="points">${user.total_points.toLocaleString(undefined, {maximumFractionDigits: 2})}</td>
-                        <td class="bulls">${user.total_bulls.toLocaleString(undefined, {maximumFractionDigits: 4})}</td>
-                        <td>${user.rounds_participated}</td>
-                        <td class="user-id">${user.userId}</td>
+                        <td class="username">${user[FIELD_MAP.username]}</td>
+                        <td class="points">${user[FIELD_MAP.total_points].toLocaleString(undefined, {maximumFractionDigits: 2})}</td>
+                        <td class="bulls">${user[FIELD_MAP.total_bulls].toLocaleString(undefined, {maximumFractionDigits: 2})}</td>
+                        <td>${user[FIELD_MAP.rounds_participated]}</td>
+                        <td class="user-id">${user[FIELD_MAP.userId]}</td>
                     </tr>
                 `;
         }).join('');
@@ -740,18 +810,24 @@
         document.querySelector('.table-container').scrollIntoView({behavior: 'smooth'});
     }
 
-    // --- 图表相关函数（保持不变）---
+    // --- 图表相关函数（修复数据引用）---
     function toggleAnalytics() {
         const section = document.getElementById('analyticsSection');
         const toggleBtn = document.getElementById('analyticsToggle');
 
+        // 🚨 修复数据分析点不开的问题：确保事件绑定成功
+        // 这部分逻辑本身是正确的，问题可能是因为 loadData 失败或 HTML 结构问题。
+        // 但这里只需确保 loadData 中事件绑定是正确的即可。
         section.classList.toggle('expanded');
         toggleBtn.classList.toggle('active');
 
         if (section.classList.contains('expanded')) {
-            if (!chartInstance) createRoundsChart();
-            if (!pointsChartInstance) createPointsChart();
-            if (!bullsChartInstance) createBullsChart();
+            // 延迟创建图表，确保 DOM 已经展开并有尺寸
+            setTimeout(() => {
+                if (!chartInstance) createRoundsChart();
+                if (!pointsChartInstance) createPointsChart();
+                if (!bullsChartInstance) createBullsChart();
+            }, 100);
         }
     }
 
@@ -764,8 +840,9 @@
             {label: '200+', min: 200, count: 0, color: '#9C27B0'}
         ];
 
+        // ⚠️ 使用缩写键 'r'
         allData.forEach(user => {
-            const rounds = user.rounds_participated;
+            const rounds = user[FIELD_MAP.rounds_participated];
             for (const bin of bins) {
                 if (bin.max !== undefined && rounds <= bin.max && (bin.min === undefined || rounds >= bin.min)) {
                     bin.count++;
@@ -821,7 +898,8 @@
     }
 
     function createPointsChart() {
-        const points = allData.map(user => user.total_points).filter(p => !isNaN(p));
+        // ⚠️ 使用缩写键 'p'
+        const points = allData.map(user => user[FIELD_MAP.total_points]).filter(p => !isNaN(p));
         const ctx = document.getElementById('pointsChart').getContext('2d');
 
         if (pointsChartInstance) pointsChartInstance.destroy();
@@ -888,7 +966,8 @@
     }
 
     function createBullsChart() {
-        const bulls = allData.map(user => user.total_bulls).filter(b => b >= 0 && !isNaN(b));
+        // ⚠️ 使用缩写键 'b'
+        const bulls = allData.map(user => user[FIELD_MAP.total_bulls]).filter(b => b >= 0 && !isNaN(b));
         const ctx = document.getElementById('bullsChart').getContext('2d');
 
         if (bullsChartInstance) bullsChartInstance.destroy();
@@ -956,7 +1035,7 @@
     }
 
     // ===================================
-    // 绑定新的事件监听器
+    // 绑定事件监听器
     // ===================================
     document.getElementById('searchInput').addEventListener('input', applyFiltersAndSort);
     document.getElementById('minRoundsInput').addEventListener('input', applyFiltersAndSort);
@@ -968,11 +1047,7 @@
         renderTable();
     });
 
-    document.querySelectorAll('th.sortable').forEach(th => {
-        th.addEventListener('click', () => {
-            sortData(th.dataset.sort);
-        });
-    });
+    // 排序事件的绑定已移至 loadData 函数中
 
     loadData();
 </script>
