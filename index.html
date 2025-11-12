@@ -222,9 +222,17 @@
             font-size: 1.1em;
         }
 
-        .rank-1 { color: #FFD700; }
-        .rank-2 { color: #C0C0C0; }
-        .rank-3 { color: #CD7F32; }
+        .rank-1 {
+            color: #FFD700;
+        }
+
+        .rank-2 {
+            color: #C0C0C0;
+        }
+
+        .rank-3 {
+            color: #CD7F32;
+        }
 
         .username {
             font-weight: 600;
@@ -391,6 +399,7 @@
             th, td {
                 padding: 10px 8px;
             }
+
             .chart-item {
                 max-width: 100%;
                 min-width: 100%;
@@ -399,292 +408,292 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🏆 Infinex Bullrun 排行榜</h1>
-            <div class="social-links">
-                <a href="https://github.com/0xcchen01" target="_blank" rel="noopener noreferrer">
-                    <i class="fab fa-github"></i>
-                    <span>Github</span>
-                </a>
-                <a href="https://x.com/0xcchen01" target="_blank" rel="noopener noreferrer">
-                    <i class="fab fa-twitter"></i>
-                    <span>Twitter</span>
-                </a>
+<div class="container">
+    <div class="header">
+        <h1>🏆 Infinex Bullrun 排行榜</h1>
+        <div class="social-links">
+            <a href="https://github.com/0xcchen01" target="_blank" rel="noopener noreferrer">
+                <i class="fab fa-github"></i>
+                <span>Github</span>
+            </a>
+            <a href="https://x.com/0xcchen01" target="_blank" rel="noopener noreferrer">
+                <i class="fab fa-twitter"></i>
+                <span>Twitter</span>
+            </a>
+        </div>
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalUsers">-</div>
+                <div class="stat-label">总用户数</div>
             </div>
-            <div class="stats">
-                <div class="stat-item">
-                    <div class="stat-value" id="totalUsers">-</div>
-                    <div class="stat-label">总用户数</div>
+            <div class="stat-item">
+                <div class="stat-value" id="generatedAt">-</div>
+                <div class="stat-label">更新时间</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="displayedUsers">-</div>
+                <div class="stat-label">显示用户数</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="analyticsToggle" class="analytics-toggle">
+        <span>📊 数据分析 (点击展开/折叠)</span>
+        <i class="fas fa-chevron-down"></i>
+    </div>
+
+    <div id="analyticsSection" class="analytics-section">
+        <div class="charts-grid">
+            <div class="chart-item">
+                <h2 class="chart-title">🎯 回合数分布</h2>
+                <div class="chart-container">
+                    <canvas id="roundsChart"></canvas>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="generatedAt">-</div>
-                    <div class="stat-label">更新时间</div>
+            </div>
+            <div class="chart-item">
+                <h2 class="chart-title">📈 总积分分布</h2>
+                <div class="chart-container">
+                    <canvas id="pointsChart"></canvas>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-value" id="displayedUsers">-</div>
-                    <div class="stat-label">显示用户数</div>
+            </div>
+            <div class="chart-item">
+                <h2 class="chart-title">🐂 总 Bulls 分布</h2>
+                <div class="chart-container">
+                    <canvas id="bullsChart"></canvas>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div id="analyticsToggle" class="analytics-toggle">
-            <span>📊 数据分析 (点击展开/折叠)</span>
-            <i class="fas fa-chevron-down"></i>
-        </div>
-
-        <div id="analyticsSection" class="analytics-section">
-            <div class="charts-grid">
-                <div class="chart-item">
-                    <h2 class="chart-title">回合数分布</h2>
-                    <div class="chart-container">
-                        <canvas id="roundsChart"></canvas>
-                    </div>
-                </div>
-                <div class="chart-item">
-                    <h2 class="chart-title">📈 总积分分布</h2>
-                    <div class="chart-container">
-                        <canvas id="pointsChart"></canvas>
-                    </div>
-                </div>
-                <div class="chart-item">
-                    <h2 class="chart-title">🐂 总 Bulls 分布</h2>
-                    <div class="chart-container">
-                        <canvas id="bullsChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-<div class="controls">
-            <div class="search-box">
-                <input
+    <div class="controls">
+        <div class="search-box">
+            <input
                     type="text"
                     id="searchInput"
                     class="search-input"
                     placeholder="🔍 搜索用户名或用户ID (支持 'user1 | user2' 多词模糊搜索)"
-                >
+            >
 
-                <div class="page-size-control">
-                    <label for="minRoundsInput" class="page-size-label">回合数:</label>
-                    <input
+            <div class="page-size-control">
+                <label for="minRoundsInput" class="page-size-label">回合数:</label>
+                <input
                         type="number"
                         id="minRoundsInput"
                         class="page-size-select"
                         placeholder="最小"
                         min="0"
                         style="width: 80px;"
-                    >
-                    <span class="page-size-label" style="font-weight: normal;">至</span>
-                    <input
+                >
+                <span class="page-size-label" style="font-weight: normal;">至</span>
+                <input
                         type="number"
                         id="maxRoundsInput"
                         class="page-size-select"
                         placeholder="最大"
                         min="0"
                         style="width: 80px;"
-                    >
-                </div>
-                <div class="page-size-control">
-                    <label for="pageSizeSelect" class="page-size-label">每页显示：</label>
-                    <select id="pageSizeSelect" class="page-size-select">
-                        <option value="20">20</option>
-                        <option value="50" selected>50</option>
-                        <option value="100">100</option>
-                        <option value="200">200</option>
-                        <option value="500">500</option>
-                    </select>
-                </div>
+                >
+            </div>
+            <div class="page-size-control">
+                <label for="pageSizeSelect" class="page-size-label">每页显示：</label>
+                <select id="pageSizeSelect" class="page-size-select">
+                    <option value="20">20</option>
+                    <option value="50" selected>50</option>
+                    <option value="100">100</option>
+                    <option value="200">200</option>
+                    <option value="500">500</option>
+                </select>
             </div>
         </div>
-
-        <div class="table-container">
-            <div id="loading" class="loading">加载数据中...</div>
-            <table id="rankingsTable" style="display: none;">
-                <thead>
-                    <tr>
-                        <th class="sortable" data-sort="rank">排名</th>
-                        <th class="sortable" data-sort="username">用户名</th>
-                        <th class="sortable" data-sort="total_points">总积分</th>
-                        <th class="sortable" data-sort="total_bulls">总Bulls</th>
-                        <th class="sortable" data-sort="rounds_participated">回合数</th>
-                        <th>用户ID</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                </tbody>
-            </table>
-            <div id="noResults" class="no-results" style="display: none;">
-                未找到匹配的用户 😢
-            </div>
-        </div>
-
-        <div class="pagination" id="pagination" style="display: none;"></div>
     </div>
 
+    <div class="table-container">
+        <div id="loading" class="loading">加载数据中...</div>
+        <table id="rankingsTable" style="display: none;">
+            <thead>
+            <tr>
+                <th class="sortable" data-sort="rank">排名</th>
+                <th class="sortable" data-sort="username">用户名</th>
+                <th class="sortable" data-sort="total_points">总积分</th>
+                <th class="sortable" data-sort="total_bulls">总Bulls</th>
+                <th class="sortable" data-sort="rounds_participated">回合数</th>
+                <th>用户ID</th>
+            </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+        </table>
+        <div id="noResults" class="no-results" style="display: none;">
+            未找到匹配的用户 😢
+        </div>
+    </div>
+
+    <div class="pagination" id="pagination" style="display: none;"></div>
+</div>
+
 <script>
-        let allData = [];
-        let filteredData = [];
-        let currentSort = { field: 'total_bulls', order: 'desc' };
-        let currentPage = 1;
-        let itemsPerPage = 50;
-        let chartInstance = null;
-        let pointsChartInstance = null;
-        let bullsChartInstance = null;
+    let allData = [];
+    let filteredData = [];
+    let currentSort = {field: 'total_bulls', order: 'desc'};
+    let currentPage = 1;
+    let itemsPerPage = 50;
+    let chartInstance = null;
+    let pointsChartInstance = null;
+    let bullsChartInstance = null;
 
-        // ===================================
-        // 核心数据加载与初始化
-        // ===================================
-        async function loadData() {
-            try {
-                // 确保数据文件路径正确
-                const response = await fetch('/user_rankings_simplified.json');
-                const data = await response.json();
+    // ===================================
+    // 核心数据加载与初始化
+    // ===================================
+    async function loadData() {
+        try {
+            // 确保数据文件路径正确
+            const response = await fetch('/user_rankings_simplified.json');
+            const data = await response.json();
 
-                // 添加排名
-                allData = data.rankings.map((user, index) => ({
-                    ...user,
-                    rank: index + 1,
-                    current_rank: index + 1
-                }));
+            // 添加排名
+            allData = data.rankings.map((user, index) => ({
+                ...user,
+                rank: index + 1,
+                current_rank: index + 1
+            }));
 
-                // 计算并保存Bulls排名
-                const bullsSorted = [...allData].sort((a, b) => b.total_bulls - a.total_bulls);
-                bullsSorted.forEach((user, index) => {
-                    user.bulls_rank = index + 1;
-                });
+            // 计算并保存Bulls排名
+            const bullsSorted = [...allData].sort((a, b) => b.total_bulls - a.total_bulls);
+            bullsSorted.forEach((user, index) => {
+                user.bulls_rank = index + 1;
+            });
 
-                // 初始化数据
-                applyFiltersAndSort();
+            // 初始化数据
+            applyFiltersAndSort();
 
-                // 更新统计信息
-                document.getElementById('totalUsers').textContent = data.total_users.toLocaleString();
-                document.getElementById('generatedAt').textContent = data.generated_at;
-                document.getElementById('displayedUsers').textContent = allData.length.toLocaleString();
+            // 更新统计信息
+            document.getElementById('totalUsers').textContent = data.total_users.toLocaleString();
+            document.getElementById('generatedAt').textContent = data.generated_at;
+            document.getElementById('displayedUsers').textContent = allData.length.toLocaleString();
 
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('rankingsTable').style.display = 'table';
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('rankingsTable').style.display = 'table';
 
-                // 绑定分析切换事件
-                document.getElementById('analyticsToggle').addEventListener('click', toggleAnalytics);
+            // 绑定分析切换事件
+            document.getElementById('analyticsToggle').addEventListener('click', toggleAnalytics);
 
-            } catch (error) {
-                console.error('加载数据失败:', error);
-                document.getElementById('loading').innerHTML = '❌ 加载数据失败，请检查数据源路径和格式';
+        } catch (error) {
+            console.error('加载数据失败:', error);
+            document.getElementById('loading').innerHTML = '❌ 加载数据失败，请检查数据源路径和格式';
+        }
+    }
+
+    // ===================================
+    // 🆕 整合筛选和排序逻辑
+    // ===================================
+    function applyFiltersAndSort() {
+        const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+        const minRounds = parseInt(document.getElementById('minRoundsInput').value) || 0;
+        const maxRounds = parseInt(document.getElementById('maxRoundsInput').value) || Infinity;
+
+        // 1. 筛选数据
+        let tempFilteredData = allData.filter(user => {
+            // 回合数筛选
+            const roundsFilter = user.rounds_participated >= minRounds && user.rounds_participated <= maxRounds;
+
+            // 搜索关键词筛选 (支持 'user1 | user2' 多词模糊搜索)
+            let searchFilter = true;
+            if (searchQuery) {
+                const searchTerms = searchQuery.split(/\s*\|\s*|\s+/).filter(term => term.length > 0);
+                const username = user.username.toLowerCase();
+                const userId = user.userId.toLowerCase();
+                searchFilter = searchTerms.some(term =>
+                    username.includes(term) || userId.includes(term)
+                );
+            }
+
+            return roundsFilter && searchFilter;
+        });
+
+        // 2. 排序数据
+        const {field, order} = currentSort;
+
+        tempFilteredData.sort((a, b) => {
+            let aVal = a[field];
+            let bVal = b[field];
+
+            if (typeof aVal === 'string') {
+                aVal = aVal.toLowerCase();
+                bVal = bVal.toLowerCase();
+            }
+
+            if (order === 'asc') {
+                return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+            } else {
+                return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
+            }
+        });
+
+        // 3. 更新当前排名
+        tempFilteredData.forEach((user, index) => {
+            user.current_rank = index + 1;
+        });
+
+        filteredData = tempFilteredData;
+        currentPage = 1;
+        renderTable();
+    }
+
+    function sortData(field, order = null) {
+        if (order === null) {
+            if (currentSort.field === field) {
+                order = currentSort.order === 'asc' ? 'desc' : 'asc';
+            } else {
+                order = (field === 'total_bulls' || field === 'total_points') ? 'desc' : 'asc';
             }
         }
 
-        // ===================================
-        // 🆕 整合筛选和排序逻辑
-        // ===================================
-        function applyFiltersAndSort() {
-            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
-            const minRounds = parseInt(document.getElementById('minRoundsInput').value) || 0;
-            const maxRounds = parseInt(document.getElementById('maxRoundsInput').value) || Infinity;
+        currentSort = {field, order};
+        updateSortHeaders();
+        applyFiltersAndSort(); // 排序后重新应用筛选和渲染
+    }
 
-            // 1. 筛选数据
-            let tempFilteredData = allData.filter(user => {
-                // 回合数筛选
-                const roundsFilter = user.rounds_participated >= minRounds && user.rounds_participated <= maxRounds;
-
-                // 搜索关键词筛选 (支持 'user1 | user2' 多词模糊搜索)
-                let searchFilter = true;
-                if (searchQuery) {
-                    const searchTerms = searchQuery.split(/\s*\|\s*|\s+/).filter(term => term.length > 0);
-                    const username = user.username.toLowerCase();
-                    const userId = user.userId.toLowerCase();
-                    searchFilter = searchTerms.some(term =>
-                        username.includes(term) || userId.includes(term)
-                    );
-                }
-
-                return roundsFilter && searchFilter;
-            });
-
-            // 2. 排序数据
-            const { field, order } = currentSort;
-
-            tempFilteredData.sort((a, b) => {
-                let aVal = a[field];
-                let bVal = b[field];
-
-                if (typeof aVal === 'string') {
-                    aVal = aVal.toLowerCase();
-                    bVal = bVal.toLowerCase();
-                }
-
-                if (order === 'asc') {
-                    return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
-                } else {
-                    return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
-                }
-            });
-
-            // 3. 更新当前排名
-            tempFilteredData.forEach((user, index) => {
-                user.current_rank = index + 1;
-            });
-
-            filteredData = tempFilteredData;
-            currentPage = 1;
-            renderTable();
-        }
-
-        function sortData(field, order = null) {
-            if (order === null) {
-                if (currentSort.field === field) {
-                    order = currentSort.order === 'asc' ? 'desc' : 'asc';
-                } else {
-                    order = (field === 'total_bulls' || field === 'total_points') ? 'desc' : 'asc';
-                }
+    function updateSortHeaders() {
+        document.querySelectorAll('th.sortable').forEach(th => {
+            th.classList.remove('sorted-asc', 'sorted-desc');
+            if (th.dataset.sort === currentSort.field) {
+                th.classList.add(`sorted-${currentSort.order}`);
             }
+        });
+    }
 
-            currentSort = { field, order };
-            updateSortHeaders();
-            applyFiltersAndSort(); // 排序后重新应用筛选和渲染
+    // 🚨 searchUsers 函数被 applyFiltersAndSort 取代，保留空函数体防止其他地方调用报错
+    function searchUsers(query) {
+        // 核心逻辑已转移到 applyFiltersAndSort
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        const noResults = document.getElementById('noResults');
+        const pagination = document.getElementById('pagination');
+
+        if (filteredData.length === 0) {
+            tbody.innerHTML = '';
+            noResults.style.display = 'block';
+            pagination.style.display = 'none';
+            return;
         }
 
-        function updateSortHeaders() {
-            document.querySelectorAll('th.sortable').forEach(th => {
-                th.classList.remove('sorted-asc', 'sorted-desc');
-                if (th.dataset.sort === currentSort.field) {
-                    th.classList.add(`sorted-${currentSort.order}`);
-                }
-            });
-        }
+        noResults.style.display = 'none';
 
-        // 🚨 searchUsers 函数被 applyFiltersAndSort 取代，保留空函数体防止其他地方调用报错
-        function searchUsers(query) {
-             // 核心逻辑已转移到 applyFiltersAndSort
-        }
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const pageData = filteredData.slice(startIndex, endIndex);
 
-        function renderTable() {
-            const tbody = document.getElementById('tableBody');
-            const noResults = document.getElementById('noResults');
-            const pagination = document.getElementById('pagination');
+        tbody.innerHTML = pageData.map(user => {
+            let displayRank = user.current_rank !== undefined ? user.current_rank : user.bulls_rank;
 
-            if (filteredData.length === 0) {
-                tbody.innerHTML = '';
-                noResults.style.display = 'block';
-                pagination.style.display = 'none';
-                return;
-            }
+            let rankClass = '';
+            if (displayRank === 1) rankClass = 'rank-1';
+            else if (displayRank === 2) rankClass = 'rank-2';
+            else if (displayRank === 3) rankClass = 'rank-3';
 
-            noResults.style.display = 'none';
-
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const pageData = filteredData.slice(startIndex, endIndex);
-
-            tbody.innerHTML = pageData.map(user => {
-                let displayRank = user.current_rank !== undefined ? user.current_rank : user.bulls_rank;
-
-                let rankClass = '';
-                if (displayRank === 1) rankClass = 'rank-1';
-                else if (displayRank === 2) rankClass = 'rank-2';
-                else if (displayRank === 3) rankClass = 'rank-3';
-
-                return `
+            return `
                     <tr>
                         <td class="rank ${rankClass}">#${displayRank}</td>
                         <td class="username">${user.username}</td>
@@ -694,23 +703,23 @@
                         <td class="user-id">${user.userId}</td>
                     </tr>
                 `;
-            }).join('');
+        }).join('');
 
-            renderPagination();
+        renderPagination();
+    }
+
+    function renderPagination() {
+        const pagination = document.getElementById('pagination');
+        const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+        if (totalPages <= 1) {
+            pagination.style.display = 'none';
+            return;
         }
 
-        function renderPagination() {
-            const pagination = document.getElementById('pagination');
-            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+        pagination.style.display = 'flex';
 
-            if (totalPages <= 1) {
-                pagination.style.display = 'none';
-                return;
-            }
-
-            pagination.style.display = 'flex';
-
-            let paginationHTML = `
+        let paginationHTML = `
                 <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
                     ← 上一页
                 </button>
@@ -720,252 +729,253 @@
                 </button>
             `;
 
-            pagination.innerHTML = paginationHTML;
+        pagination.innerHTML = paginationHTML;
+    }
+
+    function changePage(page) {
+        const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        renderTable();
+        document.querySelector('.table-container').scrollIntoView({behavior: 'smooth'});
+    }
+
+    // --- 图表相关函数（保持不变）---
+    function toggleAnalytics() {
+        const section = document.getElementById('analyticsSection');
+        const toggleBtn = document.getElementById('analyticsToggle');
+
+        section.classList.toggle('expanded');
+        toggleBtn.classList.toggle('active');
+
+        if (section.classList.contains('expanded')) {
+            if (!chartInstance) createRoundsChart();
+            if (!pointsChartInstance) createPointsChart();
+            if (!bullsChartInstance) createBullsChart();
         }
+    }
 
-        function changePage(page) {
-            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-            if (page < 1 || page > totalPages) return;
-            currentPage = page;
-            renderTable();
-            document.querySelector('.table-container').scrollIntoView({ behavior: 'smooth' });
-        }
+    function createRoundsChart() {
+        const bins = [
+            {label: '低于 10', max: 9, count: 0, color: '#4CAF50'},
+            {label: '10 - 49', min: 10, max: 49, count: 0, color: '#2196F3'},
+            {label: '50 - 99', min: 50, max: 99, count: 0, color: '#FFC107'},
+            {label: '100 - 199', min: 100, max: 199, count: 0, color: '#FF5722'},
+            {label: '200+', min: 200, count: 0, color: '#9C27B0'}
+        ];
 
-        // --- 图表相关函数（保持不变）---
-        function toggleAnalytics() {
-            const section = document.getElementById('analyticsSection');
-            const toggleBtn = document.getElementById('analyticsToggle');
-
-            section.classList.toggle('expanded');
-            toggleBtn.classList.toggle('active');
-
-            if (section.classList.contains('expanded')) {
-                if (!chartInstance) createRoundsChart();
-                if (!pointsChartInstance) createPointsChart();
-                if (!bullsChartInstance) createBullsChart();
+        allData.forEach(user => {
+            const rounds = user.rounds_participated;
+            for (const bin of bins) {
+                if (bin.max !== undefined && rounds <= bin.max && (bin.min === undefined || rounds >= bin.min)) {
+                    bin.count++;
+                    break;
+                } else if (bin.min !== undefined && rounds >= bin.min && bin.max === undefined) {
+                    bin.count++;
+                    break;
+                }
             }
-        }
-        function createRoundsChart() {
-            const bins = [
-                { label: '低于 10', max: 9, count: 0, color: '#4CAF50' },
-                { label: '10 - 49', min: 10, max: 49, count: 0, color: '#2196F3' },
-                { label: '50 - 99', min: 50, max: 99, count: 0, color: '#FFC107' },
-                { label: '100 - 199', min: 100, max: 199, count: 0, color: '#FF5722' },
-                { label: '200+', min: 200, count: 0, color: '#9C27B0' }
-            ];
-
-            allData.forEach(user => {
-                const rounds = user.rounds_participated;
-                for (const bin of bins) {
-                    if (bin.max !== undefined && rounds <= bin.max && (bin.min === undefined || rounds >= bin.min)) {
-                        bin.count++;
-                        break;
-                    } else if (bin.min !== undefined && rounds >= bin.min && bin.max === undefined) {
-                        bin.count++;
-                        break;
-                    }
-                }
-            });
-
-            const labels = bins.map(b => b.label);
-            const data = bins.map(b => b.count);
-            const backgroundColors = bins.map(b => b.color);
-            const totalUsers = allData.length;
-            const percentages = data.map(count => ((count / totalUsers) * 100).toFixed(1));
-
-            const ctx = document.getElementById('roundsChart').getContext('2d');
-
-            if (chartInstance) chartInstance.destroy();
-
-            chartInstance = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: '用户数',
-                        data: data,
-                        backgroundColor: backgroundColors,
-                        borderColor: 'white',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        title: { display: false },
-                        legend: { position: 'bottom' },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.parsed || 0;
-                                    const percentage = percentages[context.dataIndex];
-                                    return `${label}: ${value} 人 (${percentage}%)`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function createPointsChart() {
-            const points = allData.map(user => user.total_points).filter(p => !isNaN(p));
-            const ctx = document.getElementById('pointsChart').getContext('2d');
-
-            if (pointsChartInstance) pointsChartInstance.destroy();
-            if (points.length === 0) {
-                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                return;
-            }
-            const bins = [
-                { label: '负积分', min: -Infinity, max: -0.01, count: 0, color: '#A0A0A0' }, // 负分
-                { label: '0 - 4,999', min: 0, max: 4999, count: 0, color: '#A0D911' },         // 低活跃
-                { label: '5,000 - 9,999', min: 5000, max: 9999, count: 0, color: '#52C41A' },     // 中低
-                { label: '10,000 - 29,999', min: 10000, max: 29999, count: 0, color: '#1890FF' }, // 中高
-                { label: '30,000 - 49,999', min: 30000, max: 49999, count: 0, color: '#FAAD14' }, // 较高
-                { label: '50,000 - 99,999', min: 50000, max: 99999, count: 0, color: '#FF7A45' }, // 高活跃
-                { label: '100,000+', min: 100000, max: Infinity, count: 0, color: '#F5222D' },   // 极高
-            ];
-
-            points.forEach(p => {
-                for (const bin of bins) {
-                    if (p >= bin.min && (p <= bin.max || (bin.max === Infinity && p >= bin.min))) {
-                        bin.count++;
-                        break;
-                    }
-                }
-            });
-
-            const totalUsers = allData.length;
-            const labels = bins.map(b => b.label);
-            const data = bins.map(b => b.count);
-            const backgroundColors = bins.map(b => b.color);
-            const percentages = data.map(count => totalUsers > 0 ? ((count / totalUsers) * 100).toFixed(1) : '0.0');
-
-            pointsChartInstance = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: '用户数',
-                        data: data,
-                        backgroundColor: backgroundColors,
-                        borderColor: 'white',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        title: { display: false },
-                        legend: { position: 'bottom' },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.parsed || 0;
-                                    const percentage = percentages[context.dataIndex];
-                                    return `${label}: ${value} 人 (${percentage}%)`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function createBullsChart() {
-            const bulls = allData.map(user => user.total_bulls).filter(b => b >= 0 && !isNaN(b));
-            const ctx = document.getElementById('bullsChart').getContext('2d');
-
-            if (bullsChartInstance) bullsChartInstance.destroy();
-            if (bulls.length === 0) {
-                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                return;
-            }
-            const bins = [
-                { label: '0 - 0.99 Bulls', min: 0, max: 0.99, count: 0, color: '#C0C0C0' },
-                { label: '1 - 999 Bulls', min: 1, max: 999, count: 0, color: '#FADB14' },
-                { label: '1,000 - 2,999', min: 1000, max: 2999, count: 0, color: '#FAAD14' },
-                { label: '3,000 - 4,999', min: 3000, max: 4999, count: 0, color: '#FFC53D' },
-                { label: '5,000 - 9,999', min: 5000, max: 9999, count: 0, color: '#FF7A45' },
-                { label: '10,000 - 29,999', min: 10000, max: 29999, count: 0, color: '#FF4D4F' },
-                { label: '30,000 - 49,999', min: 30000, max: 49999, count: 0, color: '#EB2F96' },
-                { label: '50,000 - 99,999', min: 50000, max: 99999, count: 0, color: '#722ED1' },
-                { label: '100,000+', min: 100000, max: Infinity, count: 0, color: '#2F54EB' },
-            ];
-
-            bulls.forEach(b => {
-                for (const bin of bins) {
-                    if (b >= bin.min && (b <= bin.max || (bin.max === Infinity && b >= bin.min))) {
-                        bin.count++;
-                        break;
-                    }
-                }
-            });
-
-            const totalUsers = allData.length;
-            const labels = bins.map(b => b.label);
-            const data = bins.map(b => b.count);
-            const backgroundColors = bins.map(b => b.color);
-            const percentages = data.map(count => totalUsers > 0 ? ((count / totalUsers) * 100).toFixed(1) : '0.0');
-            bullsChartInstance = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: '用户数',
-                        data: data,
-                        backgroundColor: backgroundColors,
-                        borderColor: 'white',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        title: { display: false },
-                        legend: { position: 'bottom' },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.parsed || 0;
-                                    const percentage = percentages[context.dataIndex];
-                                    return `${label}: ${value} 人 (${percentage}%)`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // ===================================
-        // 绑定新的事件监听器
-        // ===================================
-        document.getElementById('searchInput').addEventListener('input', applyFiltersAndSort);
-        document.getElementById('minRoundsInput').addEventListener('input', applyFiltersAndSort);
-        document.getElementById('maxRoundsInput').addEventListener('input', applyFiltersAndSort);
-
-        document.getElementById('pageSizeSelect').addEventListener('change', (e) => {
-            itemsPerPage = parseInt(e.target.value);
-            currentPage = 1;
-            renderTable();
         });
 
-        document.querySelectorAll('th.sortable').forEach(th => {
-            th.addEventListener('click', () => {
-                sortData(th.dataset.sort);
-            });
+        const labels = bins.map(b => b.label);
+        const data = bins.map(b => b.count);
+        const backgroundColors = bins.map(b => b.color);
+        const totalUsers = allData.length;
+        const percentages = data.map(count => ((count / totalUsers) * 100).toFixed(1));
+
+        const ctx = document.getElementById('roundsChart').getContext('2d');
+
+        if (chartInstance) chartInstance.destroy();
+
+        chartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '用户数',
+                    data: data,
+                    backgroundColor: backgroundColors,
+                    borderColor: 'white',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    title: {display: false},
+                    legend: {position: 'bottom'},
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const percentage = percentages[context.dataIndex];
+                                return `${label}: ${value} 人 (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function createPointsChart() {
+        const points = allData.map(user => user.total_points).filter(p => !isNaN(p));
+        const ctx = document.getElementById('pointsChart').getContext('2d');
+
+        if (pointsChartInstance) pointsChartInstance.destroy();
+        if (points.length === 0) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            return;
+        }
+        const bins = [
+            {label: '负积分', min: -Infinity, max: -0.01, count: 0, color: '#A0A0A0'}, // 负分
+            {label: '0 - 4,999', min: 0, max: 4999, count: 0, color: '#A0D911'},         // 低活跃
+            {label: '5,000 - 9,999', min: 5000, max: 9999, count: 0, color: '#52C41A'},     // 中低
+            {label: '10,000 - 29,999', min: 10000, max: 29999, count: 0, color: '#1890FF'}, // 中高
+            {label: '30,000 - 49,999', min: 30000, max: 49999, count: 0, color: '#FAAD14'}, // 较高
+            {label: '50,000 - 99,999', min: 50000, max: 99999, count: 0, color: '#FF7A45'}, // 高活跃
+            {label: '100,000+', min: 100000, max: Infinity, count: 0, color: '#F5222D'},   // 极高
+        ];
+
+        points.forEach(p => {
+            for (const bin of bins) {
+                if (p >= bin.min && (p <= bin.max || (bin.max === Infinity && p >= bin.min))) {
+                    bin.count++;
+                    break;
+                }
+            }
         });
 
-        loadData();
-    </script>
+        const totalUsers = allData.length;
+        const labels = bins.map(b => b.label);
+        const data = bins.map(b => b.count);
+        const backgroundColors = bins.map(b => b.color);
+        const percentages = data.map(count => totalUsers > 0 ? ((count / totalUsers) * 100).toFixed(1) : '0.0');
+
+        pointsChartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '用户数',
+                    data: data,
+                    backgroundColor: backgroundColors,
+                    borderColor: 'white',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    title: {display: false},
+                    legend: {position: 'bottom'},
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const percentage = percentages[context.dataIndex];
+                                return `${label}: ${value} 人 (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function createBullsChart() {
+        const bulls = allData.map(user => user.total_bulls).filter(b => b >= 0 && !isNaN(b));
+        const ctx = document.getElementById('bullsChart').getContext('2d');
+
+        if (bullsChartInstance) bullsChartInstance.destroy();
+        if (bulls.length === 0) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            return;
+        }
+        const bins = [
+            {label: '0 - 0.99 Bulls', min: 0, max: 0.99, count: 0, color: '#C0C0C0'},
+            {label: '1 - 999 Bulls', min: 1, max: 999, count: 0, color: '#FADB14'},
+            {label: '1,000 - 2,999', min: 1000, max: 2999, count: 0, color: '#FAAD14'},
+            {label: '3,000 - 4,999', min: 3000, max: 4999, count: 0, color: '#FFC53D'},
+            {label: '5,000 - 9,999', min: 5000, max: 9999, count: 0, color: '#FF7A45'},
+            {label: '10,000 - 29,999', min: 10000, max: 29999, count: 0, color: '#FF4D4F'},
+            {label: '30,000 - 49,999', min: 30000, max: 49999, count: 0, color: '#EB2F96'},
+            {label: '50,000 - 99,999', min: 50000, max: 99999, count: 0, color: '#722ED1'},
+            {label: '100,000+', min: 100000, max: Infinity, count: 0, color: '#2F54EB'},
+        ];
+
+        bulls.forEach(b => {
+            for (const bin of bins) {
+                if (b >= bin.min && (b <= bin.max || (bin.max === Infinity && b >= bin.min))) {
+                    bin.count++;
+                    break;
+                }
+            }
+        });
+
+        const totalUsers = allData.length;
+        const labels = bins.map(b => b.label);
+        const data = bins.map(b => b.count);
+        const backgroundColors = bins.map(b => b.color);
+        const percentages = data.map(count => totalUsers > 0 ? ((count / totalUsers) * 100).toFixed(1) : '0.0');
+        bullsChartInstance = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '用户数',
+                    data: data,
+                    backgroundColor: backgroundColors,
+                    borderColor: 'white',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    title: {display: false},
+                    legend: {position: 'bottom'},
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const percentage = percentages[context.dataIndex];
+                                return `${label}: ${value} 人 (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // ===================================
+    // 绑定新的事件监听器
+    // ===================================
+    document.getElementById('searchInput').addEventListener('input', applyFiltersAndSort);
+    document.getElementById('minRoundsInput').addEventListener('input', applyFiltersAndSort);
+    document.getElementById('maxRoundsInput').addEventListener('input', applyFiltersAndSort);
+
+    document.getElementById('pageSizeSelect').addEventListener('change', (e) => {
+        itemsPerPage = parseInt(e.target.value);
+        currentPage = 1;
+        renderTable();
+    });
+
+    document.querySelectorAll('th.sortable').forEach(th => {
+        th.addEventListener('click', () => {
+            sortData(th.dataset.sort);
+        });
+    });
+
+    loadData();
+</script>
 </body>
 
 </html>
