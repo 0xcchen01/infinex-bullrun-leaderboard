@@ -397,7 +397,7 @@
     <script>
         let allData = [];
         let filteredData = [];
-        let currentSort = { field: 'rank', order: 'asc' };
+        let currentSort = { field: 'total_bulls', order: 'desc' };
         let currentPage = 1;
         let itemsPerPage = 50;
 
@@ -430,7 +430,8 @@
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('rankingsTable').style.display = 'table';
 
-                renderTable();
+                // 初始按Bulls排序
+                sortData('total_bulls', 'desc');
             } catch (error) {
                 console.error('加载数据失败:', error);
                 document.getElementById('loading').innerHTML = '❌ 加载数据失败，请确保 /public/user_rankings_simplified.json 文件存在';
@@ -623,4 +624,5 @@
         loadData();
     </script>
 </body>
+
 </html>
